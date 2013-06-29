@@ -1,4 +1,4 @@
-SNPDict{
+SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in there)
 	const <emptyBasePair = #[\none,\none];
 	const <emptyBase = #[\none];
 	var <snpDict;

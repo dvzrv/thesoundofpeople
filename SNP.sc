@@ -1,4 +1,4 @@
-SNP{//TODO: use vectorial represntations only, strip chromosome (redundant, as stored in SNPDict already), 
+SNP{//TODO: move to SNPInfo (lib) and rely on arrays only in SNPDict
 	var <chromosome;//chromosome as Symbol
 	var <vecChromosome;//corresponding number
 	var <id;//rsid of the SNP
