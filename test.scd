@@ -9,4 +9,6 @@
 ~dict.at(\21)[1l]
 
 SNPInfo.baseToVec(\AA)
-SNPInfo.p
+SNPInfo.lengthAtOneMs
+
+~dictionary.

@@ -78,12 +78,12 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 		arg snp, position;
 		var positionHolder, new = 0;//the SNP holder in snpDict
 		if(snpDict.includesKey(position.asSymbol), {//if there is an entry already, add this one after it
-      //add SNP information at position (chromosome->[rsid,base,[resolver]])
+      //add SNP information at position (chromosome->[position (local), rsid,base,[resolver]])
 			snpDict.at(position.asSymbol).add(snp[0] -> snp[1..]);
 			new = -1;
 		},{//else create the first one in this slot
 			positionHolder = Dictionary.new(26);	
-      //add SNP information at position (chromosome->[rsid,base,[resolver]])
+      //add SNP information at position (chromosome->[position (local), rsid,base,[resolver]])
 			positionHolder.add(snp[0] -> snp[1..]);
 			//add holder at key \0 for information on the number of unknown SNPs
 			snpDict.at(position.asSymbol).add(\0 -> 0);
@@ -92,7 +92,7 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 			positions = positions+1;
 		});
     //NEW: if the SNP has no resolver, increment the unknown counter of this position
-		if(snp[1..].hasResolver.not,{
+		if(SNPInfo.hasResolver(snp[1..]).not,{
 			snpDict.at(position.asSymbol).put(\0 -> snpDict.at(position.asSymbol).at(\0)+1);
 		});
 		^new;
@@ -156,7 +156,7 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 		if(snpDict.includesKey(position.asSymbol),{//if the position exists, check it
 			snpDict.at(position.asSymbol).keysValuesDo({
 				arg chromosome, snp;
-				if(snp.hasResolver.not,{
+				if(SNPInfo.hasResolver(snp),{
 					noneResolver.add(chromosome -> snp);
 					noneResolverCount = noneResolverCount + 1;
 				});

@@ -78,7 +78,6 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 			^out;
 		},{
 			if(this.isBasePair(base),{//if it's a base pair calc
-			  "BasePair".postln;
         switch(base,
 					\AA, {^a+p},
 					\AC, {^(a-c)+p},
@@ -93,7 +92,7 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 				);
 			},{
 				if(this.isBase(base),{//if it's a single base, return
-					switch(base,
+          switch(base,
 						\A, {^a},
 						\C, {^c},
 						\G, {^g},
@@ -113,13 +112,13 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 		arg base;
 		base = base.asSymbol;
 		switch(base,
-			\AC,{^[\AA, \CC]},
-			\AG,{^[\AA, \GG]},
-			\AT,{^[\AA, \TT]},
-			\CG,{^[\CC, \GG]},
-			\CT,{^[\CC, \TT]},
-			\GT,{^[\GG, \TT]},
-			{^[\none, \none]}
+			\AC,{^[a+p, c+p]},
+			\AG,{^[a+p, g+p]},
+			\AT,{^[a+p, t+p]},
+			\CG,{^[c+p, g+p]},
+			\CT,{^[c+p, t+p]},
+			\GT,{^[g+p, t+p]},
+			{^[e, e]}
 		);
 	}
 

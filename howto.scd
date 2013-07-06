@@ -6,12 +6,17 @@
 //parse a new file from opensnp.org
 ~parser = SNPParser.new("/tmp/1.23andme.9");
 //get a SNPDict
-~dictionary = ~parser.readFile;
+~dictionary = ~parser.readFile(100);
 //write the SNPDict to file
 ~file = SNPFile("/tmp/1.sonificate.snp");
 ~file.writeFile(~dictionary);
 )
-~dictionary.snpDict.values[1].values[0].vecBase
+
+
+~dictionary.snpDict.size
+~dictionary.snpArr.size
+~dictionary.snpDict.values[1].values[0]
+
 //You might want to recompile the Class library now. Your RAM will be full...
 //boot server FIRST, then load file
 (
