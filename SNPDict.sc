@@ -1,8 +1,8 @@
 SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in there)
 	const <emptyBasePair = #[\none,\none];
 	const <emptyBase = #[\none];
-	var <snpDict;
-	var <snpArr;
+	var <snpDict; //holds all SNP information. position->array of SNPs (key ->value). SNP = [rsid, base, [resolver]] (resolver is optional)
+	var <snpArr;//holds all positions in sequential order
 	var <positionLookup;
 	var <unknownLookup;
 	var <unknownArr;
@@ -29,7 +29,7 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 	}
 	
 	updatePositionLookup{//sort the dictionary's position lookup table when updating a new position
-		arg position, positionAdd;
+		arg position, positionAdd;//
 		if(positionAdd,{//add or remove a position in the lookup table
 			positionLookup.add(position.asFloat -> true);
 		},{
@@ -73,37 +73,29 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 			}
 		);
 	}
-
+  //stores information on a SNP to the main Dictionary (snpDict)
 	storeSNP{//store a combo to the snpDict and the lookup tables when reading from opensnp.org -file
 		arg snp, position;
 		var positionHolder, new = 0;//the SNP holder in snpDict
 		if(snpDict.includesKey(position.asSymbol), {//if there is an entry already, add this one after it
-			snpDict.at(position.asSymbol).add(snp.chromosome -> snp);
+      //add SNP information at position (chromosome->[rsid,base,[resolver]])
+			snpDict.at(position.asSymbol).add(snp[0] -> snp[1..]);
 			new = -1;
 		},{//else create the first one in this slot
-			positionHolder = Dictionary.new(25);	
-			positionHolder.add(snp.chromosome -> snp);
-			snpDict.put(position.asSymbol, positionHolder);
+			positionHolder = Dictionary.new(26);	
+      //add SNP information at position (chromosome->[rsid,base,[resolver]])
+			positionHolder.add(snp[0] -> snp[1..]);
+			//add holder at key \0 for information on the number of unknown SNPs
+			snpDict.at(position.asSymbol).add(\0 -> 0);
 			this.updatePositionLookup(position, true);
 			new = 1;
 			positions = positions+1;
 		});
-		if(snp.hasResolver.not,{//if the SNP has no resolver, update the unknown lookup table
-			this.updateUnknownLookup(position, true);
+    //NEW: if the SNP has no resolver, increment the unknown counter of this position
+		if(snp[1..].hasResolver.not,{
+			snpDict.at(position.asSymbol).put(\0 -> snpDict.at(position.asSymbol).at(\0)+1);
 		});
 		^new;
-	}
-
-	storeSNPFromFile{//store a combo to the snpDict and the lookup tables when reading from own file
-		arg snp, position;
-		var positionHolder, new = 0;//the SNP holder in snpDict
-		if(snpDict.includesKey(position.asSymbol), {//if there is an entry already, add this one after it
-			snpDict.at(position.asSymbol).add(snp.chromosome -> snp);
-		},{//else create the first one in this slot
-			positionHolder = Dictionary.new(25);
-			positionHolder.add(snp.chromosome -> snp);
-			snpDict.put(position.asSymbol, positionHolder);
-		});
 	}
 	
 	initLookupFromFile{//init lookup table from file with size given
@@ -124,25 +116,16 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 	
 	updateResolver{//update a SNP resolver at a given position
 		arg position, id, resolver;
-		var resolverLeft;
-		if(resolver!=SNPInfo.emptyBasePair && resolver!=SNPInfo.emptyBase,{//if the resolver is none, don't do anything
-			snpDict.at(position.asSymbol).do({
-				arg snpItem;
-				if(id==snpItem.id, {
-					snpItem.resolver_(resolver);
-					("Resolver updated.").postln;
-					^true;
-				});
-			});
-//			resolverLeft = this.noneResolverAtPosition(position);
-//			if(resolverLeft == false,{//if there are no unknowns left, delete position from lookup table
-//				unknownArr.removeAt(unknownArr.indexOf(position.asFloat));
-//			});
-//			resolverLeft = nil;
-		},{
-			("Not updating position "++position++". Resolver is none.").postln;
-			^false;
-		});
+    if(resolver!=SNPInfo.e,{//if the resolver is not empty
+      snpDict.at(position.asSymbol).keysValuesDo{|key,value|
+        if(value[0]==id,{
+          //if id found, concat value and resolver
+          snpDict.at(position.asSymbol).put(key,value++[resolver]);
+          //update the resolver count of this position
+          snpDict.at(position.asSymbol).put(\0,snpDict.at(position.asSymbol).at(\0)-1);
+        });
+      };
+    });
 	}
 
 	deleteSNP{//delete a SNP at a given position

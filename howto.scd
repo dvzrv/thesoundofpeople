@@ -11,7 +11,7 @@
 ~file = SNPFile("/tmp/1.sonificate.snp");
 ~file.writeFile(~dictionary);
 )
-
+~dictionary.snpDict.values[1].values[0].vecBase
 //You might want to recompile the Class library now. Your RAM will be full...
 //boot server FIRST, then load file
 (

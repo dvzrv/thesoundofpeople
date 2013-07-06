@@ -10,11 +10,13 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 //	const <chromosomesFactor = #[1, 1.0248818404643, 1.2586989312271, 1.3039238578163, 1.3777202708052, 1.4566257978907, 1.5662480524924, 1.7029500665129, 1.7650631334069, 1.8390163889117, 1.8462117858074, 1.8621374094106, 2.1641997484794, 2.3218601681945, 2.4309688587862, 2.7585778581012, 3.0697700147583, 3.1923592004677, 4.2153713518124, 3.9547570730079, 5.1787069346401, 4.85825415617, 1.6052664523139, 4.1980065842769, 15043.190355483];
 	const <lengthAtOneMs = 69.236283611;//in hours
 	const <sCompany = #["ftdna-illumina", "23andme", "23andme-exome-vcf", "decodeme"];
-	const <a = #[1,0,0,0];
-	const <c = #[0,1,0,0];
-	const <g = #[0,0,1,0];
-	const <t = #[0,0,0,1];
-	const <e = #[0,0,0,0];
+  //base vectors (last bit sets base pair indicator)
+	const <a = #[1,0,0,0,0];
+	const <c = #[0,1,0,0,0];
+	const <g = #[0,0,1,0,0];
+	const <t = #[0,0,0,1,0];
+	const <e = #[0,0,0,0,0];
+	const <p = #[0,0,0,0,1]; //base pair indicator
 	classvar <workingSCompany = #[1];//the companies working with this software (so far)
 
 	*calcPosition{//normalize all positions on chromosomes to the longest (the first) by chromosomesFactor of chromosomesFactor
@@ -76,17 +78,18 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 			^out;
 		},{
 			if(this.isBasePair(base),{//if it's a base pair calc
-				switch(base,
-					\AA, {^a},
-					\AC, {^(a-c)},
-					\AG, {^(a-g)},
-					\AT, {^(a-t)},
-					\CC, {^c},
-					\CG, {^(c-g)},
-					\CT, {^(c-t)},
-					\GG, {^g},
-					\GT, {^(g-t)},
-					\TT, {^t},
+			  "BasePair".postln;
+        switch(base,
+					\AA, {^a+p},
+					\AC, {^(a-c)+p},
+					\AG, {^(a-g)+p},
+					\AT, {^(a-t)+p},
+					\CC, {^c+p},
+					\CG, {^(c-g)+p},
+					\CT, {^(c-t)+p},
+					\GG, {^g+p},
+					\GT, {^(g-t)+p},
+					\TT, {^t+p},
 				);
 			},{
 				if(this.isBase(base),{//if it's a single base, return
@@ -140,10 +143,18 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 	
 	*isBasePair{//check if it's a (known) base pair
 		arg base;
-		if(basePair.includes(base.asSymbol),{//if the base is part of the unknown base pairs
+		if(basePair.includes(base.asSymbol),{//if the base is part of the known base pairs
 			^true;
 		},{
 			^false;
 		});
 	}
+  *hasResolver{//check if the SNP has a resolver
+    arg base;
+    if(base.size>2, {
+      ^true;
+    },{
+      ^false;
+    });
+  }
 }
