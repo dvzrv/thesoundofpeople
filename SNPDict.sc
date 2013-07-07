@@ -80,21 +80,25 @@ SNPDict{//TODO: only use array representations in snpDict (get rid of SNPs in th
 		if(snpDict.includesKey(position.asSymbol), {//if there is an entry already, add this one after it
       //add SNP information at position (chromosome->[position (local), rsid,base,[resolver]])
 			snpDict.at(position.asSymbol).add(snp[0] -> snp[1..]);
+      //("Added "++snp[0]++"->"++snp[1..]++" at position "++position).postln;
 			new = -1;
 		},{//else create the first one in this slot
 			positionHolder = Dictionary.new(26);	
       //add SNP information at position (chromosome->[position (local), rsid,base,[resolver]])
 			positionHolder.add(snp[0] -> snp[1..]);
 			//add holder at key \0 for information on the number of unknown SNPs
-			snpDict.at(position.asSymbol).add(\0 -> 0);
-			this.updatePositionLookup(position, true);
+			positionHolder.add(\0 -> Array.new);
+      snpDict.add(position.asSymbol->positionHolder);
+      //("Added "++snp[0]++"->"++snp[1..]++" at new position "++position).postln;
+		
+      this.updatePositionLookup(position, true);
 			new = 1;
 			positions = positions+1;
 		});
-    //NEW: if the SNP has no resolver, increment the unknown counter of this position
-		if(SNPInfo.hasResolver(snp[1..]).not,{
-			snpDict.at(position.asSymbol).put(\0 -> snpDict.at(position.asSymbol).at(\0)+1);
-		});
+    //NEW: if the SNP has no resolver, add its chromosome to the \0 slot
+  		if(SNPInfo.hasResolver(snp[1..]).not,{
+  			snpDict.at(position.asSymbol).add(\0 -> (snpDict.at(position.asSymbol).at(\0)++[snp[0].asFloat]));
+  		});
 		^new;
 	}
 	

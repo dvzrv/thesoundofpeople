@@ -7,15 +7,21 @@
 ~parser = SNPParser.new("/tmp/1.23andme.9");
 //get a SNPDict
 ~dictionary = ~parser.readFile(100);
+~dictionary = ~parser.readFile();
+~parser.linesToRead
 //write the SNPDict to file
 ~file = SNPFile("/tmp/1.sonificate.snp");
 ~file.writeFile(~dictionary);
 )
 
 
+~something = ~dictionary.storeSNP([ 1140718, \rs35222290, [ 0, 0, 0, 1, 1 ] ], 1140718)
+~something = ~dictionary.snpDict.at(1140718).add([ 1140718, \rs35222290, [ 0, 0, 0, 1, 1 ] ] )
+~dictionary.snpDict.at(1011521)
 ~dictionary.snpDict.size
-~dictionary.snpArr.size
-~dictionary.snpDict.values[1].values[0]
+~dictionary.snpDict.at(\1011521).add(\0->1)
+~dictionary.snpDict.values
+~dictionary.snpDict.keys
 
 //You might want to recompile the Class library now. Your RAM will be full...
 //boot server FIRST, then load file

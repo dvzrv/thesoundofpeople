@@ -150,7 +150,7 @@ SNPInfo{//helper class for calculations and constants used in the other classes
 	}
   *hasResolver{//check if the SNP has a resolver
     arg base;
-    if(base.size>2, {
+    if(base.size>3, {
       ^true;
     },{
       ^false;

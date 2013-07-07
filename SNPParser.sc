@@ -73,15 +73,16 @@ SNPParser{
 		comboDict = SNPDict.new(fileLength[0], userID);
 		if(snpFile.isOpen,{
 			protect{
-				while{nand((line = snpFile.getLine).notNil, counter>linesToRead)}{//FIXME: Reinsert testset
+//				while{nand((line = snpFile.getLine).notNil, counter>linesToRead)}{
+				while{(line = snpFile.getLine).notNil}{//FIXME: Reinsert testset
 					if(line[0].asString!="#",{//skip commented lines
 						tmp = line.delimit({|ch| ch.isSpace});//delimit the line by space and/or tab
 						if(tmp[3].asString!="--" && (SNPInfo.isBasePair(tmp[3]) || SNPInfo.isBase(tmp[3]) && (SNPInfo.chromosomesLength[SNPInfo.convertChromosome(tmp[1])-1]>=tmp[2].asFloat)),{//skip empty SNPs and make sure it's either a single base or a base pair and ignore out-of-range SNPs (yes, science is unclear!)
 							if(SNPInfo.isBasePair(tmp[3]),{//if it's a base pair, set it up
-                snp = [tmp[1], tmp[2], tmp[0], SNPInfo.baseToVec(tmp[3].asSymbol)]; //creates a SNP information set (chromosome, rsid, base)
+                snp = [tmp[1].asFloat, tmp[2], tmp[0].asSymbol, SNPInfo.baseToVec(tmp[3].asSymbol)]; //creates a SNP information set (chromosome, rsid, base)
                 resolver = SNPInfo.createResolverForPair(tmp[3]);
                 if (resolver!=[SNPInfo.e,SNPInfo.e],{
-                  snp = snp++resolver;
+                  snp = snp++[resolver];
                 });
 							},{
 								if(SNPInfo.isBase(tmp[3]), {//if it's a single base, set it up
@@ -89,9 +90,9 @@ SNPParser{
 								});
 							});
 							newSameCounter = newSameCounter + comboDict.storeSNP(snp, SNPInfo.calcPosition(snp[0], snp[1]));
-              newSameCounter.postln;
-              snp.postln;
-              resolver.postln;
+              //newSameCounter.postln;
+              //snp.postln;
+              //resolver.postln;
 							switch(newSameCounter,
 								1.0,{"Storing SNPs now: \n==========".postln;},
 								100000.0,{"=".post;},
