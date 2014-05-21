@@ -23,6 +23,7 @@ SNPSonificator {
   var <>recPath;//String representing directory to use for recording
   var <recordingBuffer;//the recording buffer to use, wehen recording
   var <baseTone = #[110.00, 65.4, 98.00, 73.42];//the fundamentals from which 8 octaves will be calculated: A (A2), C (C2), G (G2), T (D2)
+  var <snpView;
 
   *new{
     arg snpDict, numChannels = 2, playTime, includeUnknown = false, ignoreSNPs, setRecord = false, recordPath;
@@ -45,7 +46,7 @@ SNPSonificator {
     this.setupBusses(numChannels);
     this.addSNPSynths.value;
     this.addCompressionSynths;
-    //TODO: add effects Synths based on chromosome areas
+    // TODO: add effects Synths based on chromosome areas
     if(setRecord,{//if recording should be set up
       if(recordPath.notNil && recordPath.isString,{//first check if recordingPath is set
         if(recordPath[recordPath.size-1]!="/",{//compensate for missing trailing slash
@@ -101,7 +102,7 @@ SNPSonificator {
     switch(channels.asInt,
       2,{speakerSetup = [[8,16,24,6,14,22,4,12,20,2,10,18],[7,15,23,1,9,17,3,11,19,5,11,21]];},
       4,{speakerSetup = [[3,7,11,15,19,23],[4,8,12,16,20,24],[2,6,10,14,18,22],[1,5,9,13,17,21]];},
-      6,{speakerSetup = [[5,11,17,23],[6,12,18,24],[4,10,16,12],[2,8,14,20],[1,7,13,19],[3,9,15,21]];},
+      6,{speakerSetup = [[5,11,17,23],[6,12,18,24],[4,10,16,22],[2,8,14,20],[1,7,13,19],[3,9,15,21]];},
       8,{speakerSetup = [[7,15,23],[8,16,24],[6,14,22],[4,12,20],[2,10,18],[1,9,17],[3,11,19],[5,13,21]];},
       12,{speakerSetup = [[12,24],[10,22],[8,20],[6,18],[4,16],[2,14],[1,13],[3,15],[5,17],[7,19],[9,21],[11,23]];},
       {"Invalid number of speakers set! Fix this by calling setupSpeakers(nSpeakers) on this object or this will break. Seriously!".postln;}
@@ -249,17 +250,20 @@ SNPSonificator {
         0.002,//clampTime
         0.01//relaxTime
       );
-      ReplaceOut.ar(0, compressed);
-      Out.ar(recBus, compressed);
+      ReplaceOut.ar(0, compressed*0.1);
+      Out.ar(recBus, compressed*0.1);
     }).add;
   }
 
   startDSPSynths{//start compression and possibly recording Synths
     ("Starting compression Synth.").postln;
     Synth(\compressor, [inBus:sonBus], compressionGroup);//play compression Synth
+    compressionGroup.run(true);//explicitely turn on compressionGroup (needed for pause/play)
     if(record,{//if recording, play recording Synth
       ("Starting recording Synth for recording to file.").postln;
       Synth(\recordSNP, [buffer: this.recordingBuffer], recordingGroup);
+    },{//FIXME: Do we have to explicitely deactivate recordingGroup when not used?
+      recordingGroup.run(false);
     });
   }
 
@@ -278,7 +282,6 @@ SNPSonificator {
       if(compressionGroup.isRunning,{
         ("Stopping compressor Synth.").postln;
         compressionGroup.run(false);
-        compressionGroup.freeAllMsg;
       });
     }.play;
   }
@@ -358,6 +361,10 @@ SNPSonificator {
         });
       });
     });
+    //update the currently playing base of the chromosome in snpView, if it has been spawned
+    if(snpView.notNil,{
+      snpView.setSNPText(snp.vecChromosome, snp.base);
+    });
     baseKey.free;
   }
 
@@ -383,5 +390,8 @@ SNPSonificator {
   queryTimeAndPosition{//query current time and position
     ("Positions: "++currentStep.asString++" - "++lastStep.asString++".").postln;
     ("Play time: "++(currentStep*lengthOfSNP*1000).asString++"s - "++(lastStep*lengthOfSNP*1000).asString++"s.").postln;
+  }
+  spawnView{
+    snpView = SNPGUI.new(speakerSetup);
   }
 }
